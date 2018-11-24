@@ -22,8 +22,8 @@ class JumiaSpider(scrapy.Spider):
                     'description': product.css('::attr(data-name)').extract_first(),
                     'brand': product.css('::attr(data-brand)').extract_first(),
                     'link': product.css('a.link::attr(href)').extract_first(),
-                    'old_price': old_price,
-                    'new_price': product.css('.price-container').css('.price span::attr(data-price)').extract_first(),
+                    'old_price': float(old_price.replace(',','')),
+                    'new_price': float(product.css('.price-container').css('.price span::attr(data-price)').extract_first().replace(',','')),
                     'image': product.css('.image-wrapper.default-state img::attr(data-src)').extract_first(),
                     'platform': 'Jumia',
                 }
@@ -56,8 +56,8 @@ class SouqSpider(scrapy.Spider):
                     'description': product['title'],
                     'brand': product['manufacturer_en'],
                     'link': product['item_url'],
-                    'old_price': product['market_price']['price'],
-                    'new_price': product['price']['price'],
+                    'old_price': float(product['market_price']['price'].replace(',','')),
+                    'new_price': float(product['price']['price'].replace(',','')),
                     'image': product['image_url'],
                     'platform': 'Souq',
                 }
