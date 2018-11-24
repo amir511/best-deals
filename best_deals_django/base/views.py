@@ -4,14 +4,16 @@ from .serializers import ProductSerializer
 
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all().order_by('description')
-    serializer_class = ProductSerializer
-    http_method_names = ['get']
-
-class ProductByPlatform(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     http_method_names = ['get']
 
     def get_queryset(self):
-        platform = self.kwargs['platform']
-        return Product.objects.filter(platform=platform).order_by('description')
+        queryset = Product.objects.all().order_by('description')
+        platform = self.request.query_params.get('platform', None)
+        search = self.request.query_params.get('search', None)
+        if platform:
+            queryset = queryset.filter(platform=platform.capitalize())
+        if search:
+            queryset = queryset.filter(description__search=search)
+        return queryset
+
