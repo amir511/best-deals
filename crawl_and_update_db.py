@@ -40,9 +40,12 @@ def read_json_file(file_path):
 
 
 def create_product(product_dict):
-    product = Product(**product_dict)
-    product.save()
-    logger.info('Created product: {}'.format(str(product)))
+    try:
+        product = Product(**product_dict)
+        product.save()
+        logger.info('Created product: {}'.format(str(product)))
+    except Exception as e:
+        logger.error("Couldn't create product, because of: {}".format(e))
 
 
 def crawl_and_update_db():
