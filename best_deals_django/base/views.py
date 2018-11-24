@@ -1,23 +1,35 @@
-from .models import Product
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from .models import Product
 from .serializers import ProductSerializer
 
+PLATFORM_PARAM = openapi.Parameter('platform', openapi.IN_QUERY, description="filter by platform (jumia or souq)", type=openapi.TYPE_STRING)
+BRAND_PARAM = openapi.Parameter('brand', openapi.IN_QUERY, description="filter by brand", type=openapi.TYPE_STRING)
+SEARCH_PARAM = openapi.Parameter('search', openapi.IN_QUERY, description="search the description of the products", type=openapi.TYPE_STRING)
+MAX_PRICE_PARAM = openapi.Parameter('max_price', openapi.IN_QUERY, description="excludes products that has prices above this number", type=openapi.TYPE_NUMBER)
+MIN_PRICE_PARAM = openapi.Parameter('min_price', openapi.IN_QUERY, description="excludes products that has prices below this number", type=openapi.TYPE_NUMBER)
+SORT_PARAM = openapi.Parameter('sort', openapi.IN_QUERY, description="sorts products either ascending or descending based on prices, accepts `a` or `d`", type=openapi.TYPE_STRING)
 
+PARAM_LIST = [
+    PLATFORM_PARAM,
+    BRAND_PARAM,
+    SEARCH_PARAM,
+    MAX_PRICE_PARAM,
+    MIN_PRICE_PARAM,
+    SORT_PARAM,
+]
+
+@method_decorator(name='list', decorator=swagger_auto_schema(manual_parameters=PARAM_LIST))
 class ProductViewSet(viewsets.ModelViewSet):
     """
     retrieve:
-        Returns the specified product
+    Returns the specified product
+    ---
     list:
-        Returns a list of all products
-        Available GET queries:
-            
-            platform    filter by platform (jumia or souq)
-            brand       filter by brand 
-            search      search the description of the products
-            max_price   excludes products that has prices above this parameter
-            min_price   excludes products that has prices below this parameter
-            sort        sorts products either ascending or descending based on prices
-                        accepts `a` or `d`
+    Returns a list of all products
+    ---
     """
     serializer_class = ProductSerializer
     http_method_names = ['get']
@@ -47,6 +59,4 @@ class ProductViewSet(viewsets.ModelViewSet):
             elif sort == 'd':
                 queryset = queryset.order_by('-new_price')
 
-
         return queryset
-
