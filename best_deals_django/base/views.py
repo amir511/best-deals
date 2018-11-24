@@ -4,6 +4,21 @@ from .serializers import ProductSerializer
 
 
 class ProductViewSet(viewsets.ModelViewSet):
+    """
+    retrieve:
+        Returns the specified product
+    list:
+        Returns a list of all products
+        Available GET queries:
+            
+            platform    filter by platform (jumia or souq)
+            brand       filter by brand 
+            search      search the description of the products
+            max_price   excludes products that has prices above this parameter
+            min_price   excludes products that has prices below this parameter
+            sort        sorts products either ascending or descending based on prices
+                        accepts `a` or `d`
+    """
     serializer_class = ProductSerializer
     http_method_names = ['get']
 

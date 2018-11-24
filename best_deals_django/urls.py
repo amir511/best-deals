@@ -16,8 +16,22 @@ Including another URLconf
 from django.contrib import admin
 from django.conf.urls import url
 from django.urls import path, include
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 from rest_framework import routers
 from best_deals_django.base import views
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Best Deals API",
+      default_version='v1',
+      description="Jumia and Souq Crawler",
+      contact=openapi.Contact(email="amir.anwar.said@gmail.com"),
+      license=openapi.License(name="BSD License"),
+   ),
+   validators=['flex', 'ssv'],
+   public=True,
+)
 
 router = routers.DefaultRouter()
 router.register(r'api/products', views.ProductViewSet, basename='product')
@@ -25,6 +39,7 @@ router.register(r'api/products', views.ProductViewSet, basename='product')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    url(r'^$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     url(r'^', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
