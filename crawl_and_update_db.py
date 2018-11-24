@@ -9,7 +9,20 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'best_deals_django.settings')
 django.setup()
 from best_deals_django.base.models import Product
 
-JSON_FILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'best_deals_scrapy', 'best_deals_scrapy', 'output')
+JSON_FILES_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), 'best_deals_scrapy', 'best_deals_scrapy', 'output'
+)
+
+
+def remove_old_files():
+    files = os.listdir(JSON_FILES_DIR)
+    files.remove('empty_file.txt')
+    os.chdir(JSON_FILES_DIR)
+    for file in files:
+        try:
+            os.remove(file)
+        except FileNotFoundError:
+            pass
 
 
 def crawl_spiders():
@@ -18,34 +31,33 @@ def crawl_spiders():
     process.crawl(SouqSpider)
     process.start()
 
+
 def read_json_file(file_path):
-    with open(file_path,'r') as f:
+    with open(file_path, 'r') as f:
         file_data = json.loads(f.read())
-    
+
     return file_data
 
-def update_or_create_product(product_dict):
-    product_id = product_dict['product_id']
-    platform = product_dict['platform']
-    product, status = Product.objects.get_or_create(product_id=product_id, platform=platform)
-    product.description = product_dict['description']
-    product.brand = product_dict['brand']
-    product.link = product_dict['link']
-    product.old_price = product_dict['old_price']
-    product.new_price = product_dict['new_price']
-    product.image = product_dict['image']
+
+def create_product(product_dict):
+    product = Product(**product_dict)
     product.save()
-    message = 'Created product: {}' if status else 'Updated product: {}'
-    logger.info(message.format(str(product)))
+    logger.info('Created product: {}'.format(str(product)))
+
 
 def crawl_and_update_db():
     logger.info('Started Scrapping data and updating Database')
+    remove_old_files()
     crawl_spiders()
-    for file in os.listdir(JSON_FILES_DIR):
+    Product.objects.all().delete()  # this is necessary to prevent obselete data in db, Jumia updates its offers almost every couple of hours
+    files = os.listdir(JSON_FILES_DIR)
+    files.remove('empty_file.txt')
+    for file in files:
         file_path = os.path.join(JSON_FILES_DIR, file)
         for d in read_json_file(file_path):
-            update_or_create_product(d)
+            create_product(d)
     logger.info('Finished Scrapping data and updating Database')
+
 
 if __name__ == "__main__":
     crawl_and_update_db()
