@@ -8,7 +8,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
 
     def get_queryset(self):
-        queryset = Product.objects.all()
+        queryset = Product.objects.all().order_by('description')
         platform = self.request.query_params.get('platform', None)
         brand = self.request.query_params.get('brand', None)
         search = self.request.query_params.get('search', None)
