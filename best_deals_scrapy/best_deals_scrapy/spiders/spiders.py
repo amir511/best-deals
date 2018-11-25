@@ -2,6 +2,7 @@ import scrapy
 import json
 import os
 import re
+from logzero import logger
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -17,17 +18,25 @@ class JumiaSpider(scrapy.Spider):
         for product in products:
             old_price = product.css('.price-container').css('.price.-old span::attr(data-price)').extract_first()
             if old_price:
-                d = {
-                    'product_id': product.css('::attr(data-sku)').extract_first(),
-                    'description': product.css('::attr(data-name)').extract_first(),
-                    'brand': product.css('::attr(data-brand)').extract_first(),
-                    'link': product.css('a.link::attr(href)').extract_first(),
-                    'old_price': float(old_price.replace(',','')),
-                    'new_price': float(product.css('.price-container').css('.price span::attr(data-price)').extract_first().replace(',','')),
-                    'image': product.css('.image-wrapper.default-state img::attr(data-src)').extract_first(),
-                    'platform': 'Jumia',
-                }
-                products_list.append(d)
+                try:
+                    d = {
+                        'product_id': product.css('::attr(data-sku)').extract_first(),
+                        'description': product.css('::attr(data-name)').extract_first(),
+                        'brand': product.css('::attr(data-brand)').extract_first(),
+                        'link': product.css('a.link::attr(href)').extract_first(),
+                        'old_price': float(old_price.replace(',', '')),
+                        'new_price': float(
+                            product.css('.price-container')
+                            .css('.price span::attr(data-price)')
+                            .extract_first()
+                            .replace(',', '')
+                        ),
+                        'image': product.css('.image-wrapper.default-state img::attr(data-src)').extract_first(),
+                        'platform': 'Jumia',
+                    }
+                    products_list.append(d)
+                except Exception as e:
+                    logger.error("Couldn't parse product data, the following error has occured:" + str(e))
 
         page_number = response.url.split('=')[-1]
         with open(self.filename.format(page_number), 'w') as f:
@@ -51,20 +60,23 @@ class SouqSpider(scrapy.Spider):
         products_list = []
         for product in products:
             if product['price_saving'] != False:
-                d = {
-                    'product_id': str(product['item_id']),
-                    'description': product['title'],
-                    'brand': product['manufacturer_en'],
-                    'link': product['item_url'],
-                    'old_price': float(product['market_price']['price'].replace(',','')),
-                    'new_price': float(product['price']['price'].replace(',','')),
-                    'image': product['image_url'],
-                    'platform': 'Souq',
-                }
-                products_list.append(d)
+                try:
+                    d = {
+                        'product_id': str(product['item_id']),
+                        'description': product['title'],
+                        'brand': product['manufacturer_en'],
+                        'link': product['item_url'],
+                        'old_price': float(product['market_price']['price'].replace(',', '')),
+                        'new_price': float(product['price']['price'].replace(',', '')),
+                        'image': product['image_url'],
+                        'platform': 'Souq',
+                    }
+                    products_list.append(d)
+                except Exception as e:
+                    logger.error("Couldn't parse product data, the following error has occured:" + str(e))
 
-        page_number = int(re.search('page=[0-9]+', response.url).group().replace('page=', ''))
-        campaign_id = re.search('campaign_id=[0-9]+', response.url).group().replace('campaign_id=', '')
+        page_number = int(re.search(r'page=[0-9]+', response.url).group().replace('page=', ''))
+        campaign_id = re.search(r'campaign_id=[0-9]+', response.url).group().replace('campaign_id=', '')
 
         with open(self.filename.format(campaign_id, page_number), 'w') as f:
             f.write(json.dumps(products_list))

@@ -14,32 +14,51 @@ JSON_FILES_DIR = os.path.join(
 )
 
 
-def remove_old_files():
+def _list_json_files():
     files = os.listdir(JSON_FILES_DIR)
     files.remove('empty_file.txt')
+    return files
+
+
+def remove_old_files():
+    logger.info('Removing old json files')
+    files = _list_json_files()
     os.chdir(JSON_FILES_DIR)
     for file in files:
         try:
             os.remove(file)
         except FileNotFoundError:
-            pass
+            logger.error("Couldn't remove {}, it might be already removed".format(file))
+    logger.info('Finished Removing old files')
 
 
 def crawl_spiders():
+    logger.info('Started the scraping process')
     process = CrawlerProcess({'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE; 7.0; Windows NT 5.1)'})
     process.crawl(JumiaSpider)
     process.crawl(SouqSpider)
     process.start()
+    logger.info('Finished Scraping data')
 
 
-def read_json_file(file_path):
+def delete_old_products():
+    """
+    This is necessary to prevent obselete data in db.
+    Jumia updates its offers almost every couple of hours.
+    """
+    logger.info('Removing old products from db')
+    Product.objects.all().delete()
+    logger.info('db is now empty!')
+
+
+def _read_json_file(file_path):
     with open(file_path, 'r') as f:
         file_data = json.loads(f.read())
 
     return file_data
 
 
-def create_product(product_dict):
+def _create_product(product_dict):
     try:
         product = Product(**product_dict)
         product.save()
@@ -48,19 +67,20 @@ def create_product(product_dict):
         logger.error("Couldn't create product, because of: {}".format(e))
 
 
-def crawl_and_update_db():
-    logger.info('Started Scrapping data and updating Database')
-    remove_old_files()
-    crawl_spiders()
-    Product.objects.all().delete()  # this is necessary to prevent obselete data in db, Jumia updates its offers almost every couple of hours
-    files = os.listdir(JSON_FILES_DIR)
-    files.remove('empty_file.txt')
+def create_products_from_files():
+    logger.info('Started creating products from json files')
+    files = _list_json_files()
     for file in files:
         file_path = os.path.join(JSON_FILES_DIR, file)
-        for d in read_json_file(file_path):
-            create_product(d)
-    logger.info('Finished Scrapping data and updating Database')
+        for d in _read_json_file(file_path):
+            _create_product(d)
+    logger.info('Finished creating new products')
 
 
 if __name__ == "__main__":
-    crawl_and_update_db()
+    logger.info('Started Scrapping data and updating Database')
+    remove_old_files()
+    crawl_spiders()
+    delete_old_products()
+    create_products_from_files()
+    logger.info('Finished Scrapping data and updating Database')
