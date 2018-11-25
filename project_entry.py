@@ -17,11 +17,10 @@ def schedule_and_run_crawling():
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    p1 = Process(target=run_django_server)
-    p2 = Process(target=schedule_and_run_crawling)
+    p = Process(target=schedule_and_run_crawling)
 
-    p1.start()
-    p2.start()
+    p.start()
+    run_django_server()
 
-    p1.join()
-    p2.join()
+    p.join()
+
