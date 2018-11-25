@@ -3,7 +3,6 @@ asn1crypto==0.24.0
 astroid==2.0.4
 attrs==18.2.0
 Automat==0.7.0
-black==18.9b0
 certifi==2018.10.15
 cffi==1.11.5
 chardet==3.0.4

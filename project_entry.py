@@ -10,7 +10,8 @@ def run_django_server():
 
 def schedule_and_run_crawling():
     task = lambda: subprocess.Popen(['python', 'crawl_and_update_db.py'])
-    schedule.every(5).minutes.do(task)
+    task() # Run once in the beginning
+    schedule.every().hour.do(task)
     while True:
         schedule.run_pending()
 
