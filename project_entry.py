@@ -5,7 +5,7 @@ from multiprocessing import Process
 
 
 def run_django_server():
-    subprocess.Popen(['python', 'manage.py', 'runserver'])
+    subprocess.Popen(['python', 'manage.py', 'runserver', '0.0.0.0:8000'])
 
 
 def schedule_and_run_crawling():
