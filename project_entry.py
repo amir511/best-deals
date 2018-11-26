@@ -3,9 +3,8 @@ import subprocess
 import os
 from multiprocessing import Process
 
-
 def run_django_server():
-    subprocess.Popen(['python', 'manage.py', 'runserver'])
+    subprocess.Popen(['gunicorn', 'best_deals_django.wsgi', '--log-file', '-'])
 
 
 def schedule_and_run_crawling():
