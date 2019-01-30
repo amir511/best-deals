@@ -30,15 +30,9 @@ Swagger API Documentation
     open a new terminal
     
 ```
-    $sudo su postgres
-
-    $psql
-
-    $psql=# createuser --createdb --pwprompt bestdeals;
-
-    $psql=# \q
-
-    $createdb -U bestdeals -W -h localhost best_deals
+    sudo su postgres
+    createuser --createdb --pwprompt bestdeals
+    createdb -U bestdeals -W -h localhost best_deals
 ```
 
 * you will be prompted for password twice, enter:
