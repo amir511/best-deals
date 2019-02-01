@@ -15,7 +15,7 @@ Swagger API Documentation
 
 ## How to install locally
 
-* clone git repo from https://gitlab.com/amir.anwar.said/best-deals.git
+* clone git repo.
 
 * create virtual environment beside the project folder:
 
